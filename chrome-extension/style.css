@@ -1,0 +1,122 @@
+body,
+html {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 200;
+  font-style: normal;
+  background-color: #303030;
+  color: #E3E3E3;
+  font-size: 0.9em;
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.5rem;
+  width: 400px !important;
+  height: 240px !important;
+}
+
+input{
+    width: 100%;
+    border-radius: 12px;
+    border: none;
+    background-color: #424242;
+    padding: 0px 10px 0px 10px;
+    color: #E3E3E3;
+    height: 44px;
+    border-radius: 12px;
+    outline: none;
+    font-family:  "Montserrat", sans-serif;
+}
+  
+input:focus-visible {
+    outline: none;
+}
+ 
+.input:focus{
+    border: 1px solid#ffffff4d;
+}
+
+button{
+    background-color: #1E1F20;
+    color: #E3E3E3;
+    padding: 0px 20px 0px 20px;
+    height: 44px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    min-width: 150px;
+    font-family: "Montserrat", sans-serif;
+}
+  
+button:hover{
+    color: #1DC775;
+}
+  
+button:disabled{
+    opacity: .4;
+    cursor: default;
+}
+  
+button:disabled:hover{
+    color: #E3E3E3;
+}
+
+.logo-container{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.logo-container img{
+    height: 5em;
+}
+
+.logo-motto{
+    font-size: 1.1em;
+    font-weight: normal;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+#setup{
+    text-align: center;
+}
+
+#setup h2{
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+#setup input{
+    width: 360px;
+}
+
+#setup button{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#scan{
+    text-align: center;
+}
+
+#scan h2{
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+#scan button{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#goToScan{
+    display: none;
+}
+
+
+#errorScan{
+    color: #AE4343;
+}

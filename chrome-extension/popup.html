@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>urlDNA</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap">
+</head>
+
+<body>
+    <div class="logo-container">
+        <a href="http://urldna.io" target="_blank">
+            <img src="https://urldna.io/assets/images/urldna_green.png">
+        </a>
+        <h1 class="logo-motto">The DNA test for websites</h1>
+    </div>
+    <div id="setup">
+        <h2>Enter API Key</h2>
+        <input type="text" id="apiKeyInput" placeholder="Enter your API Key" />
+        <button id="saveApiKey">Save</button>
+    </div>
+    <div id="scan" style="display:none;">
+        <h2>Scan Current Tab</h2>
+        <button id="scanTab">Scan</button>
+        <p id="waitingScan" style="display:none;">Creating new scan, please wait</p>
+        <p id="errorScan" style="display:none;"></p>
+        <button id="goToScan" style="display:none;">Go to Scan</button>
+        <button id="resetApiKey" style="display:none;">Reset API Key</button>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>
