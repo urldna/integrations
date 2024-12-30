@@ -1,0 +1,75 @@
+{
+  "schema_version": 26,
+  "standard_lib_version": 66,
+  "action_runtime_version": 18,
+  "name": "Search",
+  "description": null,
+  "guid": "ecbb28439dcd512089a46cadcadf832e",
+  "slug": "search",
+  "agents": [
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "urlDNA - Search",
+      "disabled": false,
+      "description": "https://urldna.io/api",
+      "guid": "ca991effce0532aabab60f17579ff967",
+      "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:ecbb28439dcd512089a46cadcadf832e",
+      "options": {
+        "url": "https://api.urldna.io/search",
+        "content_type": "application_json",
+        "method": "post",
+        "payload": {
+          "query": "title LIKE google"
+        },
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.urldna_api_key>>"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    }
+  ],
+  "diagram_notes": [],
+  "links": [],
+  "diagram_layout": "{\"ca991effce0532aabab60f17579ff967\":[75,45]}",
+  "send_to_story_enabled": false,
+  "entry_agent_guid": null,
+  "exit_agent_guids": [],
+  "api_entry_action_guids": [],
+  "api_exit_action_guids": [],
+  "keep_events_for": 86400,
+  "reporting_status": true,
+  "send_to_story_access": null,
+  "story_library_metadata": {},
+  "parent_only_send_to_story": false,
+  "monitor_failures": false,
+  "send_to_stories": [],
+  "synchronous_webhooks_enabled": false,
+  "send_to_story_access_source": 0,
+  "send_to_story_skill_use_requires_confirmation": true,
+  "pages": [],
+  "tags": [],
+  "time_saved_unit": "minutes",
+  "time_saved_value": 0,
+  "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:ecbb28439dcd512089a46cadcadf832e",
+  "integration_product": null,
+  "integration_vendor": null,
+  "llm_product_instructions": "",
+  "exported_at": "2024-12-24T16:31:11Z",
+  "icon": ":custom-7af766b9-74a9-4d3f-b685-1275e955e412:",
+  "integrations": []
+}

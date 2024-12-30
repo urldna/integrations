@@ -1,0 +1,222 @@
+{
+  "schema_version": 26,
+  "standard_lib_version": 66,
+  "action_runtime_version": 18,
+  "name": "new_scan",
+  "description": null,
+  "guid": "0402796ac04df942a4cce88f03120b3b",
+  "slug": "new_scan",
+  "agents": [
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "urlDNA - New Scan",
+      "disabled": false,
+      "description": null,
+      "guid": "91821c87798b9fab869f2ff6fcfdb20f",
+      "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:0402796ac04df942a4cce88f03120b3b",
+      "options": {
+        "url": "https://api.urldna.io/scan",
+        "content_type": "application_json",
+        "method": "post",
+        "payload": {
+          "submitted_url": "https://google.com",
+          "device": "DESKTOP"
+        },
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.urldna_api_key>>"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Wait until complete",
+      "disabled": false,
+      "description": "Wait until scan job is completed",
+      "guid": "872aebbc379112dbc23de4f5d4f17274",
+      "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:0402796ac04df942a4cce88f03120b3b",
+      "options": {
+        "mode": "delay",
+        "seconds": "10"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "urlDNA - Get Scan",
+      "disabled": false,
+      "description": null,
+      "guid": "47f1554801a6aed41e2038280116d64b",
+      "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:0402796ac04df942a4cce88f03120b3b",
+      "options": {
+        "url": "https://api.urldna.io/scan/<<urldna_new_scan.body.id>>",
+        "content_type": "application_json",
+        "method": "get",
+        "payload": {},
+        "headers": {
+          "Authorization": "Bearer <<CREDENTIAL.urldna_api_key>>"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Check Scan Status",
+      "disabled": false,
+      "description": null,
+      "guid": "34dfc3b02949542475b8ac4d6e6ea7ee",
+      "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:0402796ac04df942a4cce88f03120b3b",
+      "options": {
+        "rules": [
+          {
+            "path": "<<urldna_get_scan.body.scan.status>>",
+            "type": "regex",
+            "value": "RUNNING|PENDING",
+            "case_sensitive": true
+          }
+        ]
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Do Something",
+      "disabled": false,
+      "description": null,
+      "guid": "0ccbb76c0473cff749679081c33b56fc",
+      "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:0402796ac04df942a4cce88f03120b3b",
+      "options": {
+        "mode": "message_only",
+        "loop": false,
+        "payload": {
+          "message": "Scan status is <<urldna_get_scan.body.scan.status>> and ready for other steps"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    }
+  ],
+  "diagram_notes": [],
+  "links": [
+    {
+      "source": 0,
+      "receiver": 1
+    },
+    {
+      "source": 1,
+      "receiver": 2
+    },
+    {
+      "source": 2,
+      "receiver": 3
+    },
+    {
+      "source": 3,
+      "receiver": 4,
+      "link_type": "secondary"
+    },
+    {
+      "source": 3,
+      "receiver": 1
+    }
+  ],
+  "diagram_layout": "{\"91821c87798b9fab869f2ff6fcfdb20f\":[225,75],\"872aebbc379112dbc23de4f5d4f17274\":[225,150],\"47f1554801a6aed41e2038280116d64b\":[225,240],\"34dfc3b02949542475b8ac4d6e6ea7ee\":[225,315],\"0ccbb76c0473cff749679081c33b56fc\":[240,405]}",
+  "send_to_story_enabled": false,
+  "entry_agent_guid": null,
+  "exit_agent_guids": [],
+  "api_entry_action_guids": [],
+  "api_exit_action_guids": [],
+  "keep_events_for": 86400,
+  "reporting_status": true,
+  "send_to_story_access": null,
+  "story_library_metadata": {},
+  "parent_only_send_to_story": false,
+  "monitor_failures": false,
+  "send_to_stories": [],
+  "synchronous_webhooks_enabled": false,
+  "send_to_story_access_source": 0,
+  "send_to_story_skill_use_requires_confirmation": true,
+  "pages": [],
+  "tags": [],
+  "time_saved_unit": "minutes",
+  "time_saved_value": 0,
+  "origin_story_identifier": "cloud:3de0cadbdcf43f1e0fae1631bec55e54:0402796ac04df942a4cce88f03120b3b",
+  "integration_product": null,
+  "integration_vendor": null,
+  "llm_product_instructions": "",
+  "exported_at": "2024-12-27T13:16:43Z",
+  "icon": ":custom-7af766b9-74a9-4d3f-b685-1275e955e412:",
+  "integrations": []
+}
