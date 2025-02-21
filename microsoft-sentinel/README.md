@@ -39,6 +39,7 @@ For detailed setup and configuration instructions, please refer to the following
 12. Confirm that a comment is added to the incident containing the information retrieved from urlDNA.
 
 **Additional steps in case of using Key Vault**
+
 13. In Azure Key vault scrivi l'API key di urlDNA
 14. Open "Get secret -urlDNA API" and insert name of the secret
 15. You need to grant the Managed Identity of the Logic App access to Secret Get in order to read the secrets.
