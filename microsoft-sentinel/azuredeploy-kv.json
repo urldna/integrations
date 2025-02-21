@@ -1,0 +1,552 @@
+{
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion":  "1.0.0.0",
+    "metadata":  {
+        "title":  "",
+        "description":  "",
+        "prerequisites":  "",
+        "postDeployment":  [
+        ],
+        "prerequisitesDeployTemplateFile":  "",
+        "lastUpdateTime":  "",
+        "entities":  [
+        ],
+        "tags":  [
+        ],
+        "support":  {
+            "tier":  "community",
+            "armtemplate":  "Generated from https://github.com/Azure/Azure-Sentinel/tree/master/Tools/Playbook-ARM-Template-Generator"
+        },
+        "author":  {
+            "name":  ""
+        }
+    },
+    "parameters":  {
+        "PlaybookName":  {
+            "defaultValue":  "Sentinel-urlDNA-analyzer-KV",
+            "type":  "string"
+        }
+    },
+    "variables":  {
+        "MicrosoftSentinelConnectionName":  "[concat('MicrosoftSentinel-', parameters('PlaybookName'))]",
+        "KeyvaultConnectionName":  "[concat('Keyvault-', parameters('PlaybookName'))]"
+    },
+    "resources":  [
+        {
+            "properties":  {
+                "provisioningState":  "Succeeded",
+                "state":  "Enabled",
+                "definition":  {
+                    "$schema":  "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion":  "1.0.0.0",
+                    "parameters":  {
+                        "$connections":  {
+                            "defaultValue":  {
+                            },
+                            "type":  "Object"
+                        }
+                    },
+                    "triggers":  {
+                        "Microsoft_Sentinel_incident":  {
+                            "type":  "ApiConnectionWebhook",
+                            "inputs":  {
+                                "host":  {
+                                    "connection":  {
+                                        "name":  "@parameters('$connections')['azuresentinel']['connectionId']"
+                                    }
+                                },
+                                "body":  {
+                                    "callback_url":  "@listCallbackUrl()"
+                                },
+                                "path":  "/incident-creation"
+                            }
+                        }
+                    },
+                    "actions":  {
+                        "Initialize_variable_bodyStatus":  {
+                            "runAfter":  {
+                                "Get_secret_-urlDNA_API":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "InitializeVariable",
+                            "inputs":  {
+                                "variables":  [
+                                    {
+                                        "name":  "bodyStatus",
+                                        "type":  "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "Entities_-_Get_URLs":  {
+                            "runAfter":  {
+                            },
+                            "type":  "ApiConnection",
+                            "inputs":  {
+                                "host":  {
+                                    "connection":  {
+                                        "name":  "@parameters('$connections')['azuresentinel']['connectionId']"
+                                    }
+                                },
+                                "method":  "post",
+                                "body":  "@triggerBody()?['object']?['properties']?['relatedEntities']",
+                                "path":  "/entities/url"
+                            }
+                        },
+                        "For_each":  {
+                            "foreach":  "@body('Select_URLs')",
+                            "actions":  {
+                                "HTTP_POST_urlDNA":  {
+                                    "type":  "Http",
+                                    "inputs":  {
+                                        "uri":  "https://api.urldna.io/scan",
+                                        "method":  "POST",
+                                        "headers":  {
+                                            "Authorization":  "@{body('Get_secret_-urlDNA_API')?['value']}",
+                                            "Content-Type":  "application/json"
+                                        },
+                                        "body":  {
+                                            "submitted_url":  "@{item()?['url']}"
+                                        }
+                                    },
+                                    "runtimeConfiguration":  {
+                                        "contentTransfer":  {
+                                            "transferMode":  "Chunked"
+                                        }
+                                    }
+                                },
+                                "Parse_JSON_HTTP_POST_urlDNA":  {
+                                    "runAfter":  {
+                                        "HTTP_POST_urlDNA":  [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type":  "ParseJson",
+                                    "inputs":  {
+                                        "content":  "@body('HTTP_POST_urlDNA')",
+                                        "schema":  {
+                                            "type":  "object",
+                                            "properties":  {
+                                                "id":  {
+                                                    "type":  "string"
+                                                },
+                                                "status":  {
+                                                    "type":  "string"
+                                                },
+                                                "submitted_date":  {
+                                                    "type":  "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "Delay_30_sec":  {
+                                    "runAfter":  {
+                                        "Parse_JSON_HTTP_POST_urlDNA":  [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type":  "Wait",
+                                    "inputs":  {
+                                        "interval":  {
+                                            "count":  30,
+                                            "unit":  "Second"
+                                        }
+                                    }
+                                },
+                                "Until":  {
+                                    "actions":  {
+                                        "HTTP_GET_urlDNA":  {
+                                            "type":  "Http",
+                                            "inputs":  {
+                                                "uri":  "https://api.urldna.io/scan/@{body('Parse_JSON_HTTP_POST_urlDNA')?['id']}",
+                                                "method":  "GET",
+                                                "headers":  {
+                                                    "Authorization":  "@{body('Get_secret_-urlDNA_API')?['value']}",
+                                                    "Content-Type":  "application/json"
+                                                }
+                                            },
+                                            "runtimeConfiguration":  {
+                                                "contentTransfer":  {
+                                                    "transferMode":  "Chunked"
+                                                }
+                                            }
+                                        },
+                                        "Delay_15_s":  {
+                                            "runAfter":  {
+                                                "Set_bodyStatus":  [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type":  "Wait",
+                                            "inputs":  {
+                                                "interval":  {
+                                                    "count":  15,
+                                                    "unit":  "Second"
+                                                }
+                                            }
+                                        },
+                                        "Parse_JSON_HTTP_GET_urlDNA2":  {
+                                            "runAfter":  {
+                                                "HTTP_GET_urlDNA":  [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type":  "ParseJson",
+                                            "inputs":  {
+                                                "content":  "@body('HTTP_GET_urlDNA')",
+                                                "schema":  {
+                                                    "type":  "object",
+                                                    "properties":  {
+                                                        "certificate":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                            }
+                                                        },
+                                                        "console_messages":  {
+                                                            "type":  "array"
+                                                        },
+                                                        "cookies":  {
+                                                            "type":  "array"
+                                                        },
+                                                        "dom":  {
+                                                        },
+                                                        "favicon":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                "blob_uri":  {
+                                                                }
+                                                            }
+                                                        },
+                                                        "http_transactions":  {
+                                                            "type":  "array"
+                                                        },
+                                                        "ip_address":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                            }
+                                                        },
+                                                        "malicious":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                            }
+                                                        },
+                                                        "page":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                            }
+                                                        },
+                                                        "scan":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                "device":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "domain":  {
+                                                                },
+                                                                "height":  {
+                                                                    "type":  "integer"
+                                                                },
+                                                                "id":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "nsfw":  {
+                                                                },
+                                                                "origin":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "private_scan":  {
+                                                                    "type":  "boolean"
+                                                                },
+                                                                "protocol":  {
+                                                                },
+                                                                "status":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "submitted_date":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "submitted_url":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "submitter_tags":  {
+                                                                    "type":  "array"
+                                                                },
+                                                                "target_url":  {
+                                                                },
+                                                                "user_agent":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "waiting_time":  {
+                                                                    "type":  "integer"
+                                                                },
+                                                                "width":  {
+                                                                    "type":  "integer"
+                                                                }
+                                                            }
+                                                        },
+                                                        "scan_feedback":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                "malicious_count":  {
+                                                                    "type":  "integer"
+                                                                },
+                                                                "safe_count":  {
+                                                                    "type":  "integer"
+                                                                },
+                                                                "user_feedback":  {
+                                                                }
+                                                            }
+                                                        },
+                                                        "scan_whois":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                            }
+                                                        },
+                                                        "screenshot":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                "blob_uri":  {
+                                                                }
+                                                            }
+                                                        },
+                                                        "technologies":  {
+                                                            "type":  "array"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "Set_bodyStatus":  {
+                                            "runAfter":  {
+                                                "Parse_JSON_HTTP_GET_urlDNA2":  [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type":  "SetVariable",
+                                            "inputs":  {
+                                                "name":  "bodyStatus",
+                                                "value":  "@body('Parse_JSON_HTTP_GET_urlDNA2')?['scan']?['status']"
+                                            }
+                                        }
+                                    },
+                                    "runAfter":  {
+                                        "Delay_30_sec":  [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "expression":  "@equals(variables('bodyStatus'),'DONE')",
+                                    "limit":  {
+                                        "count":  12
+                                    },
+                                    "type":  "Until"
+                                },
+                                "Add_comment_to_incident_(V3)":  {
+                                    "runAfter":  {
+                                        "Until":  [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type":  "ApiConnection",
+                                    "inputs":  {
+                                        "host":  {
+                                            "connection":  {
+                                                "name":  "@parameters('$connections')['azuresentinel']['connectionId']"
+                                            }
+                                        },
+                                        "method":  "post",
+                                        "body":  {
+                                            "incidentArmId":  "@triggerBody()?['object']?['id']",
+                                            "message":  "\u003cp class=\"editor-paragraph\"\u003e\u0026lt;p class=\"editor-paragraph\"\u0026gt;@{concat('## URL Scan Results\n\n',\n'🔍 **Analyzed URL**: ', item()?['url'], '\n\n',\n'🔗 **URLdna Scan**: https://urldna.io/scan/', body('Parse_JSON_HTTP_POST_urlDNA')?['id'], '\n\n',\n'📜 **Certificate**:\n',\n'- Issuer: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['certificate']?['issuer'], 'N/A'), '\n',\n'- Valid Until: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['certificate']?['not_after'], 'N/A'), '\n\n',\n'🌐 **IP Information**:\n',\n'- IP: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['ip_address']?['ip'], 'N/A'), '\n',\n'- Location: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['ip_address']?['city'], 'N/A'), ', ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['ip_address']?['country'], 'N/A'), '\n',\n'- ISP: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['ip_address']?['isp'], 'N/A'), '\n',\n'- Organization: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['ip_address']?['org'], 'N/A'), '\n\n',\n'📋 **Page Information**:\n',\n'- Title: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['page']?['title'], 'N/A'), '\n',\n'- Domain: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['scan']?['domain'], 'N/A'), '\n\n',\n'🛡️ **Security Assessment**:\n',\n'- Malicious: ', if(equals(coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['malicious']?['malicious'], false), true), '⚠️ YES', 'No'), '\n',\n'- Threat Type: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['malicious']?['threat'], 'None'), '\n\n',\n'📝 **WHOIS Information**:\n',\n'- Creation Date: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['scan_whois']?['creation_date'], 'N/A'), '\n',\n'- Registrar: ', coalesce(body('Parse_JSON_HTTP_GET_urlDNA2')?['scan_whois']?['registrar'], 'N/A'), '\n')}\u0026lt;/p\u0026gt;\u003c/p\u003e"
+                                        },
+                                        "path":  "/Incidents/Comment"
+                                    }
+                                }
+                            },
+                            "runAfter":  {
+                                "Initialize_variable_bodyStatus":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "Foreach"
+                        },
+                        "Parse_JSON":  {
+                            "runAfter":  {
+                                "Entities_-_Get_URLs":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "ParseJson",
+                            "inputs":  {
+                                "content":  "@body('Entities_-_Get_URLs')",
+                                "schema":  {
+                                    "type":  "object",
+                                    "properties":  {
+                                        "Urls":  {
+                                            "type":  "array",
+                                            "items":  {
+                                                "type":  "object",
+                                                "properties":  {
+                                                    "url":  {
+                                                        "type":  "string"
+                                                    },
+                                                    "additionalData":  {
+                                                        "type":  "object",
+                                                        "properties":  {
+                                                            "DetonationVerdict":  {
+                                                                "type":  "string"
+                                                            },
+                                                            "DetonationFinalUrl":  {
+                                                                "type":  "string"
+                                                            },
+                                                            "DetonationScreenshot":  {
+                                                                "type":  "string"
+                                                            }
+                                                        },
+                                                        "required":  [
+                                                            "DetonationVerdict",
+                                                            "DetonationFinalUrl"
+                                                        ]
+                                                    },
+                                                    "friendlyName":  {
+                                                        "type":  "string"
+                                                    },
+                                                    "Type":  {
+                                                        "type":  "string"
+                                                    }
+                                                },
+                                                "required":  [
+                                                    "url",
+                                                    "additionalData",
+                                                    "friendlyName",
+                                                    "Type"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required":  [
+                                        "Urls"
+                                    ]
+                                }
+                            }
+                        },
+                        "Select_URLs":  {
+                            "runAfter":  {
+                                "Parse_JSON":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "Select",
+                            "inputs":  {
+                                "from":  "@body('Parse_JSON')?['Urls']",
+                                "select":  {
+                                    "url":  "@{item()?['url']}"
+                                }
+                            }
+                        },
+                        "Get_secret_-urlDNA_API":  {
+                            "runAfter":  {
+                                "Select_URLs":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "ApiConnection",
+                            "inputs":  {
+                                "host":  {
+                                    "connection":  {
+                                        "name":  "@parameters('$connections')['keyvault']['connectionId']"
+                                    }
+                                },
+                                "method":  "get",
+                                "path":  "/secrets/@{encodeURIComponent('urlDNAkey')}/value"
+                            },
+                            "runtimeConfiguration":  {
+                                "secureData":  {
+                                    "properties":  [
+                                        "outputs"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "outputs":  {
+                    }
+                },
+                "parameters":  {
+                    "$connections":  {
+                        "value":  {
+                            "azuresentinel":  {
+                                "connectionId":  "[resourceId('Microsoft.Web/connections', variables('MicrosoftSentinelConnectionName'))]",
+                                "connectionName":  "[variables('MicrosoftSentinelConnectionName')]",
+                                "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azuresentinel')]",
+                                "connectionProperties":  {
+                                    "authentication":  {
+                                        "type":  "ManagedServiceIdentity"
+                                    }
+                                }
+                            },
+                            "keyvault":  {
+                                "connectionId":  "[resourceId('Microsoft.Web/connections', variables('KeyvaultConnectionName'))]",
+                                "connectionName":  "[variables('KeyvaultConnectionName')]",
+                                "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Keyvault')]",
+                                "connectionProperties":  {
+                                    "authentication":  {
+                                        "type":  "ManagedServiceIdentity"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "name":  "[parameters('PlaybookName')]",
+            "type":  "Microsoft.Logic/workflows",
+            "location":  "[resourceGroup().location]",
+            "tags":  {
+                "hidden-SentinelTemplateName":  "Sentinel-urlDNA-analyzer-KV",
+                "hidden-SentinelTemplateVersion":  "1.0"
+            },
+            "identity":  {
+                "type":  "SystemAssigned"
+            },
+            "apiVersion":  "2017-07-01",
+            "dependsOn":  [
+                "[resourceId('Microsoft.Web/connections', variables('MicrosoftSentinelConnectionName'))]",
+                "[resourceId('Microsoft.Web/connections', variables('KeyvaultConnectionName'))]"
+            ]
+        },
+        {
+            "type":  "Microsoft.Web/connections",
+            "apiVersion":  "2016-06-01",
+            "name":  "[variables('MicrosoftSentinelConnectionName')]",
+            "location":  "[resourceGroup().location]",
+            "kind":  "V1",
+            "properties":  {
+                "displayName":  "[variables('MicrosoftSentinelConnectionName')]",
+                "customParameterValues":  {
+                },
+                "parameterValueType":  "Alternative",
+                "api":  {
+                    "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Azuresentinel')]"
+                }
+            }
+        },
+        {
+            "type":  "Microsoft.Web/connections",
+            "apiVersion":  "2016-06-01",
+            "name":  "[variables('KeyvaultConnectionName')]",
+            "location":  "[resourceGroup().location]",
+            "kind":  "V1",
+            "properties":  {
+                "displayName":  "[variables('KeyvaultConnectionName')]",
+                "customParameterValues":  {
+                },
+                "parameterValueType":  "Alternative",
+                "api":  {
+                    "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Keyvault')]"
+                }
+            }
+        }
+    ]
+}
