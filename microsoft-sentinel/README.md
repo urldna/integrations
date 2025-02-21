@@ -16,10 +16,10 @@ There are two versions of this playbook:
 ## Deployment
 You can deploy the playbook of your choice automatically by clicking the **Deploy to Azure** button below:
 
-- **Version 1:** [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2Fintegrations%2Frefs%2Fheads%2Fsentinel%2Fmicrosoft-sentinel%2Fazuredeploy.json)
+- **Version 1 (without Azure Key Vault):** [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2Fintegrations%2Frefs%2Fheads%2Fsentinel%2Fmicrosoft-sentinel%2Fazuredeploy.json)
 
-- **Version 2 (with Azure Key Vault):**[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2Fintegrations%2Frefs%2Fheads%2Fsentinel%2Fmicrosoft-sentinel%2Fazuredeploy-kv.json)
+- **Version 2 (with Azure Key Vault):**    [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2Fintegrations%2Frefs%2Fheads%2Fsentinel%2Fmicrosoft-sentinel%2Fazuredeploy-kv.json)
 
 ## Configuration Instructions
-For detailed setup and configuration instructions, please refer to the [instruction page](#).
+For detailed setup and configuration instructions, please refer to the following configuration guide(#).
 
