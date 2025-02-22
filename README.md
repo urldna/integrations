@@ -21,6 +21,9 @@ A Telegram bot integration for URLDNA, allowing you to send new scans and receiv
 ### 5. **Chrome Extension**
 Quickly scan the current browser tab with the URLDNA Chrome Extension. View results on the dedicated URLDNA page. The extension prompts the user for an API key upon installation.
 
+### 6. **Microsoft Sentinel**
+Enhance your incident response with URLDNA and Microsoft Sentinel. This playbook automatically analyzes suspicious URLs from incidents and enriches them with scan results, providing security assessments, geolocation data, and evidence directly within your Sentinel workflow.
+
 ---
 
 ## Repository Structure
@@ -30,6 +33,7 @@ Quickly scan the current browser tab with the URLDNA Chrome Extension. View resu
 - `the-hive-cortex/`: Contains Cortex analyzer files for The Hive.
 - `telegram-bot/`: Contains the code for the Telegram bot integration.
 - `chrome-extension/`: Contains the source code for the Chrome extension.
+- `microsoft-sentinel/`: Contains the source code for the Microsoft Sentinel integration.
 
 ---
 
